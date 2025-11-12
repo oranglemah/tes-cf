@@ -1,5 +1,5 @@
+// _worker.js
 import { connect } from "cloudflare:sockets";
-import { DurableObject } from "cloudflare:workers";
 
 /* ================== USER CONFIG VIA ENV ================== */
 const PORTS = [443, 80];
@@ -10,29 +10,33 @@ const PRX_PER_PAGE = 24;
 const DNS_SERVER_ADDRESS = "8.8.8.8";
 const DNS_SERVER_PORT = 53;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS,DELETE",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+  "Access-Control-Max-Age": "86400",
+};
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const upgradeHeader = request.headers.get("Upgrade");
 
-    // ---------- DO WebSocket endpoint ----------
+    // ---------- Durable Object WebSocket endpoint ----------
     if (url.pathname.startsWith("/ws/")) {
       if (upgradeHeader !== "websocket") {
         return new Response("Expected Upgrade: websocket", { status: 426 });
       }
-      // Kunci room/instance dari path (/ws/<room>)
       const room = url.pathname.replace("/ws/", "") || "default";
       const id = env.TUNNEL_DO.idFromName(room);
       const stub = env.TUNNEL_DO.get(id);
       return stub.fetch(request);
     }
 
-    // ---------- Reverse proxy default (opsional matikan) ----------
+    // ---------- WebSocket tunnel langsung (low-latency) ----------
     if (upgradeHeader === "websocket") {
-      // WebSocket tunnel ke target khusus /Free-VPN-Geo-Project/<ip-port>
       const prxMatch = url.pathname.match(/^\/Free-VPN-OrangLemah\/(.+[:=-]\d+)$/);
       if (prxMatch) {
-        // langsung handle di worker agar low-latency
         const prxIP = prxMatch[1];
         return websocketHandler(request, prxIP);
       }
@@ -44,7 +48,6 @@ export default {
     }
 
     if (url.pathname.startsWith("/check")) {
-      // CORS preflight
       if (request.method === "OPTIONS") {
         return new Response(null, { status: 204, headers: CORS_HEADERS });
       }
@@ -62,6 +65,7 @@ export default {
 
     if (url.pathname.startsWith("/api/v1")) {
       const apiPath = url.pathname.replace("/api/v1", "");
+
       // ----- Workers Domains API proxy -----
       if (apiPath.startsWith("/domains")) {
         const wildcardPath = apiPath.replace("/domains", "");
@@ -84,22 +88,20 @@ export default {
           return new Response(String(status), { status, headers: CORS_HEADERS });
         }
       }
+
       // ----- subscription generator -----
       if (apiPath.startsWith("/sub")) {
-        const fillerDomain = url.searchParams.get("domain") || `${env.APP_SERVICE_NAME}.${env.APP_ROOT_DOMAIN}`;
-        const effectiveHost = fillerDomain === `${env.APP_SERVICE_NAME}.${env.APP_ROOT_DOMAIN}`
-          ? fillerDomain
-          : `${fillerDomain}.${env.APP_SERVICE_NAME}.${env.APP_ROOT_DOMAIN}`;
+        const serviceHost = `${env.APP_SERVICE_NAME}.${env.APP_ROOT_DOMAIN}`;
+        const fillerDomain = url.searchParams.get("domain") || serviceHost;
+        const effectiveHost = fillerDomain === serviceHost ? fillerDomain : `${fillerDomain}.${serviceHost}`;
 
-        const filterCC = (url.searchParams.get("cc")?.split(",") || []).filter(Boolean);
+        const filterCC  = (url.searchParams.get("cc")?.split(",") || []).filter(Boolean);
         const filterPort = (url.searchParams.get("port")?.split(",") || PORTS).map(Number);
         const filterVPN  = (url.searchParams.get("vpn")?.split(",") || PROTOCOLS);
-        const limit = parseInt(url.searchParams.get("limit") || "10");
+        const limit  = parseInt(url.searchParams.get("limit") || "10");
         const format = url.searchParams.get("format") || "raw";
 
         const prxList = await getPrxList(env);
-
-        // filter & shuffle
         let work = prxList;
         if (filterCC.length) work = work.filter(p => filterCC.includes(p.country));
         shuffleArray(work);
@@ -117,8 +119,10 @@ export default {
               u.port = String(port);
               if (vpn === "ss") {
                 u.username = btoa(`none:${uuid}`);
-                u.searchParams.set("plugin",
-                  `v2ray-plugin${port === 80 ? "" : ";tls"};mux=0;mode=websocket;path=/Free-VPN-OrangLemah/${prx.prxIP}-${prx.prxPort};host=${effectiveHost}`);
+                u.searchParams.set(
+                  "plugin",
+                  `v2ray-plugin${port === 80 ? "" : ";tls"};mux=0;mode=websocket;path=/Free-VPN-OrangLemah/${prx.prxIP}-${prx.prxPort};host=${effectiveHost}`
+                );
               } else {
                 u.username = uuid;
                 u.searchParams.delete("plugin");
@@ -132,9 +136,10 @@ export default {
           }
         }
 
-        if (format === "raw") return new Response(out.join("\n"), { headers: CORS_HEADERS });
+        if (format === "raw")   return new Response(out.join("\n"), { headers: CORS_HEADERS });
         if (format === "v2ray") return new Response(btoa(out.join("\n")), { headers: CORS_HEADERS });
         if (["clash", "sfa", "bfr"].includes(format)) {
+          if (!env.CONVERTER_URL) return new Response("Converter URL not set", { status: 500, headers: CORS_HEADERS });
           const r = await fetch(env.CONVERTER_URL, {
             method: "POST",
             body: JSON.stringify({ url: out.join(","), format, template: "cf" })
@@ -158,9 +163,10 @@ export default {
     }
 
     // Default: halaman bantuan
-    return new Response("CF DO VPN worker online.\nRoutes: /sub, /check?target=IP:PORT, /api/v1/*, /ws/<room>", {
-      headers: { "Content-Type": "text/plain; charset=utf-8" }
-    });
+    return new Response(
+      "CF DO VPN worker online.\nRoutes: /sub, /check?target=IP:PORT, /api/v1/*, /ws/<room>",
+      { headers: { "Content-Type": "text/plain; charset=utf-8" } }
+    );
   },
 
   // Cron: refresh cache proxy list
@@ -170,26 +176,27 @@ export default {
 };
 
 /* ================== Durable Object: TunnelDO ================== */
-export class TunnelDO extends DurableObject {
-  constructor(ctx, env) {
-    super(ctx, env);
+export class TunnelDO {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
     this.sessions = new Map();
 
     // Re-attach hibernating websockets
-    this.ctx.getWebSockets().forEach(ws => {
+    this.state.getWebSockets().forEach(ws => {
       const att = ws.deserializeAttachment();
       if (att) this.sessions.set(ws, att);
     });
 
-    // Example auto response (ping/pong) tidak membangunkan DO
-    this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong"));
+    // (Optional) auto response ringan — bisa diaktifkan bila diperlukan
+    // this.state.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong"));
   }
 
   async fetch(request) {
     // Accept upgrade & hibernate
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    this.ctx.acceptWebSocket(server);
+    this.state.acceptWebSocket(server);
 
     const id = crypto.randomUUID();
     server.serializeAttachment({ id, connectedAt: Date.now() });
@@ -215,7 +222,7 @@ export class TunnelDO extends DurableObject {
   }
 }
 
-/* ================== Page/UI (ringkas): generate tabel dari PRX cache ================== */
+/* ================== Page/UI (ringkas): generate tabel dari PRX cache) ================== */
 async function handleSubPage(request, env) {
   const url = new URL(request.url);
   const pageMatch = url.pathname.match(/^\/sub\/(\d+)$/);
@@ -357,7 +364,6 @@ async function websocketHandler(request, prxIPPort) {
   let [addressRemote, portRemote] = prxIPPort.split(/[:=-]/);
   portRemote = Number(portRemote || "443");
 
-  // simple pump: pertama data dari client → target
   const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
   const readable = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
   let remoteSocketWrapper = { value: null };
@@ -368,7 +374,6 @@ async function websocketHandler(request, prxIPPort) {
         const w = remoteSocketWrapper.value.writable.getWriter();
         await w.write(chunk); w.releaseLock(); return;
       }
-      // connect pertama kali
       await handleTCPOutBound(remoteSocketWrapper, addressRemote, portRemote, chunk, webSocket, null, log);
     },
     close(){ log("readableWebSocketStream closed"); },
@@ -466,16 +471,10 @@ async function checkPrxHealth(prxIP, prxPort, cf) {
 }
 
 /* ================== Proxy list cache ================== */
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS,DELETE",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-};
-
 async function refreshProxyList(env) {
   const cache = caches.default;
   const key = new Request("https://cache.local/prx-list");
+  if (!env.PRX_BANK_URL) return; // guard
   const res = await fetch(env.PRX_BANK_URL);
   if (res.ok) {
     const text = await res.text();
@@ -505,7 +504,7 @@ async function getPrxList(env) {
   let res = await cache.match(key);
   if (res) return await res.json();
 
-  // first time (or cache miss)
+  if (!env.PRX_BANK_URL) return [];
   const r = await fetch(env.PRX_BANK_URL);
   if (r.ok) {
     const text = await r.text();
@@ -527,10 +526,11 @@ function json(obj, status=200){ return new Response(JSON.stringify(obj), { statu
 /* ================== Cloudflare API (Domains) ================== */
 class CloudflareApi {
   constructor(env){
-    this.accountID = "7e6b4320b3200424e6b2ae7ba87e8805"; // optional: tidak wajib buat workers.domains (pakai account-level)
-    this.zoneID = "3de571e998e0b46545df221530b24a1e";    // untuk attach by zone, tapi API `/workers/domains` cukup account-level.
+    // Catatan: sebaiknya gunakan API Token (env.CF_API_TOKEN) dg Authorization: Bearer <token>
+    this.accountID = "7e6b4320b3200424e6b2ae7ba87e8805"; // optional
+    this.zoneID    = "3de571e998e0b46545df221530b24a1e"; // optional
     this.email = env.CF_API_EMAIL;
-    this.key = env.CF_GLOBAL_API_KEY;
+    this.key   = env.CF_GLOBAL_API_KEY;
     this.service = env.APP_SERVICE_NAME;
     this.headers = {
       "Authorization": `Bearer ${this.key}`,
@@ -571,8 +571,6 @@ class CloudflareApi {
   }
 
   async _account(){
-    // tip: kalau perlu, ambil dari headers JWT; untuk sederhana, minta user isi manual (opsional).
-    // biarkan kosong → user bisa ganti ke env.ACCOUNT_ID dan pakai itu.
-    return (globalThis.ACCOUNT_ID || "7e6b4320b3200424e6b2ae7ba87e8805"); // atau set manual di kode kalau mau
+    return (globalThis.ACCOUNT_ID || "7e6b4320b3200424e6b2ae7ba87e8805");
   }
 }
