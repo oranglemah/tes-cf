@@ -30,7 +30,7 @@ export default {
     // ---------- Reverse proxy default (opsional matikan) ----------
     if (upgradeHeader === "websocket") {
       // WebSocket tunnel ke target khusus /Free-VPN-Geo-Project/<ip-port>
-      const prxMatch = url.pathname.match(/^\/Free-VPN-Geo-Project\/(.+[:=-]\d+)$/);
+      const prxMatch = url.pathname.match(/^\/Free-VPN-OrangLemah\/(.+[:=-]\d+)$/);
       if (prxMatch) {
         // langsung handle di worker agar low-latency
         const prxIP = prxMatch[1];
@@ -118,7 +118,7 @@ export default {
               if (vpn === "ss") {
                 u.username = btoa(`none:${uuid}`);
                 u.searchParams.set("plugin",
-                  `v2ray-plugin${port === 80 ? "" : ";tls"};mux=0;mode=websocket;path=/Free-VPN-Geo-Project/${prx.prxIP}-${prx.prxPort};host=${effectiveHost}`);
+                  `v2ray-plugin${port === 80 ? "" : ";tls"};mux=0;mode=websocket;path=/Free-VPN-OrangLemah/${prx.prxIP}-${prx.prxPort};host=${effectiveHost}`);
               } else {
                 u.username = uuid;
                 u.searchParams.delete("plugin");
