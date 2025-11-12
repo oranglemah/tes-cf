@@ -1,0 +1,34 @@
+name = "cf-do-vpn"
+main = "src/_worker.js"
+compatibility_date = "2025-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Custom domain/route (opsional, isi kalau mau langsung nempel ke zona)
+# routes = [{ pattern = "sambat.nailamazy.biz.id/*", zone_id = "YOUR_ZONE_ID" }]
+
+# Durable Objects binding
+[[durable_objects.bindings]]
+name = "TUNNEL_DO"
+class_name = "TunnelDO"
+
+# DO migrations (WAJIB minimal sekali)
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TunnelDO"]
+
+# Cron: tiap 15 menit refresh proxy list
+[triggers]
+crons = ["*/15 * * * *"]
+
+# Vars non-sensitif (boleh di sini)
+[vars]
+APP_SERVICE_NAME = "sambat"
+APP_ROOT_DOMAIN = "nailamazy.biz.id"
+PRX_BANK_URL = "https://raw.githubusercontent.com/jaka2m/botak/refs/heads/main/cek/proxyList.txt"
+CONVERTER_URL = "https://api.foolvpn.me/convert"
+DONATE_LINK = "https://github.com/oranglemah/khusus/raw/main/qris.jpg"
+
+# Secrets (JANGAN taruh di [vars]) → set via `wrangler secret put`
+# CF_API_EMAIL
+# CF_GLOBAL_API_KEY
+# OWNER_PASSWORD
