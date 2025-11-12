@@ -1,4 +1,4 @@
-name = "cf-do-vpn"
+name = "wahai"
 main = "src/_worker.js"
 compatibility_date = "2025-11-01"
 compatibility_flags = ["nodejs_compat"]
