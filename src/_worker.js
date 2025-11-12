@@ -527,8 +527,8 @@ function json(obj, status=200){ return new Response(JSON.stringify(obj), { statu
 /* ================== Cloudflare API (Domains) ================== */
 class CloudflareApi {
   constructor(env){
-    this.accountID = ""; // optional: tidak wajib buat workers.domains (pakai account-level)
-    this.zoneID = "";    // untuk attach by zone, tapi API `/workers/domains` cukup account-level.
+    this.accountID = "7e6b4320b3200424e6b2ae7ba87e8805"; // optional: tidak wajib buat workers.domains (pakai account-level)
+    this.zoneID = "3de571e998e0b46545df221530b24a1e";    // untuk attach by zone, tapi API `/workers/domains` cukup account-level.
     this.email = env.CF_API_EMAIL;
     this.key = env.CF_GLOBAL_API_KEY;
     this.service = env.APP_SERVICE_NAME;
@@ -573,6 +573,6 @@ class CloudflareApi {
   async _account(){
     // tip: kalau perlu, ambil dari headers JWT; untuk sederhana, minta user isi manual (opsional).
     // biarkan kosong → user bisa ganti ke env.ACCOUNT_ID dan pakai itu.
-    return (globalThis.ACCOUNT_ID || ""); // atau set manual di kode kalau mau
+    return (globalThis.ACCOUNT_ID || "7e6b4320b3200424e6b2ae7ba87e8805"); // atau set manual di kode kalau mau
   }
 }
