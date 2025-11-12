@@ -22,8 +22,8 @@ crons = ["*/15 * * * *"]
 
 # Vars non-sensitif (boleh di sini)
 [vars]
-APP_SERVICE_NAME = "sambat"
-APP_ROOT_DOMAIN = "nailamazy.biz.id"
+APP_SERVICE_NAME = "wahai"
+APP_ROOT_DOMAIN = "oranglemah.web.id"
 PRX_BANK_URL = "https://raw.githubusercontent.com/jaka2m/botak/refs/heads/main/cek/proxyList.txt"
 CONVERTER_URL = "https://api.foolvpn.me/convert"
 DONATE_LINK = "https://github.com/oranglemah/khusus/raw/main/qris.jpg"
