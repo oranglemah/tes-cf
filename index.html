@@ -1,135 +1,198 @@
 <!DOCTYPE html>
 <html lang="en" id="html" class="scroll-auto scrollbar-hide dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>OrangLemah-VPN | VPN Tunnel | CloudFlare</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, user-scalable=no"
+  />
+  <title>OrangLemah-VPN | Free VLESS / Trojan / SS</title>
+  <meta
+    name="description"
+    content="Free VLESS / Trojan / Shadowsocks configs via Cloudflare Worker. Cinematic dark UI by Orang_Lemah."
+  />
+  <meta
+    name="keywords"
+    content="OrangLemah-VPN, Free Vless, Vless CF, Trojan CF, Cloudflare, VPN Tunnel"
+  />
+  <meta name="author" content="Orang_Lemah-NET" />
+  <meta
+    name="robots"
+    content="index, follow, noarchive, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  />
 
-  <meta name="description" content="Akun Vless Gratis. Geo-VPN offers free Vless accounts with Cloudflare and Trojan support. Secure and fast VPN tunnel services.">
-  <meta name="keywords" content="OrangLemah-VPN, Free Vless, Vless CF, Trojan CF, Cloudflare, VPN Tunnel, Akun Vless Gratis">
-  <meta name="author" content="OrangLemah-VPN">
-  <meta name="robots" content="index, follow, noarchive, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="icon" href="https://geoproject.biz.id/circle-flags/bote.png" />
+  <link
+    rel="apple-touch-icon"
+    href="https://geoproject.biz.id/circle-flags/bote.png"
+  />
 
-  <link rel="icon" href="https://geoproject.biz.id/circle-flags/bote.png">
-  <link rel="apple-touch-icon" href="https://geoproject.biz.id/circle-flags/bote.png">
-
-  <!-- SweetAlert, Tailwind, Lozad -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Poppins", "system-ui", "sans-serif"],
+          },
+          colors: {
+            "primary-dark": "#020617",
+            "secondary-dark": "#020617",
+            "accent-cyan": "#00e0b7",
+            "accent-blue": "#4a90e2",
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- SweetAlert & lozad -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="assets/style.css">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'selector',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: {
-            'primary-dark': '#1c1c20',
-            'secondary-dark': '#2a2a2f',
-            'text-light': '#f0f0f5',
-            'accent-cyan': '#00e0b7',
-            'accent-blue': '#4a90e2',
-          }
-        }
-      }
-    };
-  </script>
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
-<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-white bg-fixed transition-colors duration-300">
-  <script>
-    (function () {
-      const theme = localStorage.getItem('theme');
-      if (theme === 'dark' || !theme) {
-        document.getElementById('html').classList.add('dark');
-      }
-    })();
-  </script>
-
+<body
+  class="bg-slate-950 text-slate-100 bg-fixed transition-colors duration-300"
+>
   <!-- Loading overlay -->
-  <div id="loading-screen" class="fixed inset-0 z-50 flex justify-center items-center bg-gray-900 bg-opacity-80 transition-opacity duration-500">
-    <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-400"></div>
+  <div
+    id="loading-screen"
+    class="fixed inset-0 z-50 flex justify-center items-center bg-slate-950/90 transition-opacity duration-500"
+  >
+    <div
+      class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-400"
+    ></div>
   </div>
 
   <!-- Notification badge -->
-  <div id="notification-badge" class="fixed z-50 opacity-0 transition-opacity ease-in-out duration-300 mt-9 mr-6 right-0 p-4 max-w-sm rounded-xl flex items-center gap-x-4 shadow-lg glass-effect dark:glass-effect-light">
+  <div
+    id="notification-badge"
+    class="fixed z-50 opacity-0 pointer-events-none transition-opacity ease-in-out duration-300 mt-9 mr-6 right-0 p-4 max-w-sm rounded-xl flex items-center gap-x-4 shadow-lg glass-effect"
+  >
     <div class="shrink-0">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 text-accent-cyan">
-        <path d="M5.85 3.5a.75.75 0 0 0-1.117-1 9.719 9.719 0 0 0-2.348 4.876.75.75 0 0 0 1.479.248A8.219 8.219 0 0 1 5.85 3.5ZM19.267 2.5a.75.75 0 1 0-1.118 1 8.22 8.22 0 0 1 1.987 4.124.75.75 0 0 0 1.48-.248A9.72 9.72 0 0 0 19.266 2.5Z" />
-        <path fill-rule="evenodd" d="M12 2.25A6.75 6.75 0 0 0 5.25 9v.75a8.217 8.217 0 0 1-2.119 5.52.75.75 0 0 0 .298 1.206c1.544.57 3.16.99 4.831 1.243a3.75 3.75 0 1 0 7.48 0 24.583 24.583 0 0 0 4.83-1.244.75.75 0 0 0 .298-1.205 8.217 8.217 0 0 1-2.118-5.52V9A6.75 6.75 0 0 0 12 2.25ZM9.75 18c0-.034 0-.067.002-.1a25.05 25.05 0 0 0 4.496 0l.002.1a2.25 2.25 0 1 1-4.5 0Z" clip-rule="evenodd" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        class="size-6 text-accent-cyan"
+      >
+        <path
+          d="M5.85 3.5a.75.75 0 0 0-1.117-1 9.719 9.719 0 0 0-2.348 4.876.75.75 0 0 0 1.479.248A8.219 8.219 0 0 1 5.85 3.5ZM19.267 2.5a.75.75 0 1 0-1.118 1 8.22 8.22 0 0 1 1.987 4.124.75.75 0 0 0 1.48-.248A9.72 9.72 0 0 0 19.266 2.5Z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M12 2.25A6.75 6.75 0 0 0 5.25 9v.75a8.217 8.217 0 0 1-2.119 5.52.75.75 0 0 0 .298 1.206c1.544.57 3.16.99 4.831 1.243a3.75 3.75 0 1 0 7.48 0 24.583 24.583 0 0 0 4.83-1.244.75.75 0 0 0 .298-1.205 8.217 8.217 0 0 1-2.118-5.52V9A6.75 6.75 0 0 0 12 2.25ZM9.75 18c0-.034 0-.067.002-.1a25.05 25.05 0 0 0 4.496 0l.002.1a2.25 2.25 0 1 1-4.5 0Z"
+          clip-rule="evenodd"
+        />
       </svg>
     </div>
     <div>
       <div class="text-md font-bold text-accent-cyan">Berhasil!</div>
-      <p class="text-sm text-gray-300">Akun berhasil disalin</p>
+      <p class="text-sm text-slate-200">Akun berhasil disalin ke clipboard</p>
     </div>
   </div>
 
   <!-- Running title -->
-  <div id="container-title" class="sticky top-0 z-10 w-full max-w-7xl mx-auto rounded-xl py-3 text-center shadow-lg backdrop-blur-md transition-all duration-300 ease-in-out">
-    <h1 id="runningTitle" class="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-pulse">
-      OrangLemah-VPN — Free VLESS / TROJAN / SS (Cloudflare)
+  <header
+    class="sticky top-0 z-10 w-full max-w-7xl mx-auto mt-2 mb-2 px-4 py-3 text-center shadow-lg backdrop-blur-md bg-slate-900/60 border border-slate-700/60 rounded-xl"
+  >
+    <h1
+      id="runningTitle"
+      class="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-pulse"
+    >
+      Org_Lemah-NET · Free VLESS / Trojan / SS · Cloudflare Tunnel
     </h1>
-  </div>
+  </header>
 
-  <!-- Main container -->
-  <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-    <div class="bg-gray-800/30 dark:bg-gray-900/40 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-700/50 p-4 sm:p-6">
+  <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <section
+      class="bg-slate-900/60 backdrop-blur-lg rounded-2xl shadow-2xl border border-slate-700/60 p-4 sm:p-6"
+    >
       <div class="flex flex-col items-center relative z-10">
-
-        <!-- Top info + search -->
-        <div class="glass-effect-light dark:glass-effect w-full mb-6 rounded-xl p-4 shadow-lg">
-          <div class="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
-            <p id="container-info-ip" class="flex items-center gap-1 text-blue-500 dark:text-blue-300">
-              IP: <span class="font-bold text-slate-800 dark:text-white">…</span>
+        <!-- Top info & search -->
+        <div class="glass-effect w-full mb-6 rounded-xl p-4 shadow-lg">
+          <div
+            class="flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm font-semibold"
+          >
+            <p
+              id="info-ip"
+              class="flex items-center gap-1 text-blue-400"
+            >
+              IP:
+              <span class="font-bold text-white">-</span>
             </p>
-            <p id="container-info-country" class="flex items-center gap-1 text-green-500 dark:text-green-300">
-              Country: <span class="font-bold text-slate-800 dark:text-white">…</span>
+            <p
+              id="info-country"
+              class="flex items-center gap-1 text-emerald-400"
+            >
+              Country:
+              <span class="font-bold text-white">-</span>
             </p>
-            <p id="container-info-isp" class="flex items-center gap-1 text-indigo-500 dark:text-indigo-300">
-              ISP: <span class="font-bold text-slate-800 dark:text-white">…</span>
+            <p
+              id="info-isp"
+              class="flex items-center gap-1 text-indigo-400"
+            >
+              ISP:
+              <span class="font-bold text-white">-</span>
             </p>
-            <p class="flex items-center gap-1 text-purple-500 dark:text-purple-300">
-              <span class="text-gray-600 dark:text-gray-300">
-                Total Proxy:
-                <strong id="total-proxy-value" class="font-semibold">0</strong>
-              </span>
+            <p class="flex items-center gap-1 text-amber-400">
+              Total Proxy:
+              <strong
+                id="total-proxy-value"
+                class="font-semibold text-white"
+                >0</strong
+              >
             </p>
-            <p class="flex items-center gap-1 text-orange-500 dark:text-orange-300">
-              <span class="text-gray-600 dark:text-gray-300">
-                Page:
-                <strong id="page-info-value" class="font-semibold">0/0</strong>
-              </span>
+            <p class="flex items-center gap-1 text-pink-400">
+              Page:
+              <strong id="page-info-value" class="font-semibold text-white"
+                >1/1</strong
+              >
             </p>
-            <p class="flex items-center gap-1 text-teal-500 dark:text-teal-300">
+            <p class="flex items-center gap-1 text-teal-400">
               Time:
-              <strong id="time-info-value" class="font-semibold text-slate-800 dark:text-white">00:00:00</strong>
+              <strong
+                id="time-info-value"
+                class="font-semibold text-white"
+                >00:00:00</strong
+              >
             </p>
           </div>
           <div class="mt-4 flex gap-2">
             <input
               type="text"
               id="search-bar"
-              placeholder="Search by IP, Port, ISP, or Country..."
-              class="w-full px-4 py-1 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Search IP / Port / ISP / Country..."
+              class="w-full px-4 py-2 rounded-lg bg-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               id="btn-search"
-              class="px-6 py-2 text-white rounded-lg disabled:opacity-50 text-base font-semibold btn-gradient hover:opacity-80 transition-opacity">
+              class="px-6 py-2 text-white rounded-lg text-sm font-semibold btn-gradient disabled:opacity-50"
+            >
               Search
             </button>
           </div>
         </div>
 
-        <!-- Filters -->
-        <div class="w-full max-w-5xl mb-6 p-6 bg-gray-800 rounded-xl shadow-xl grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Filter cards -->
+        <div
+          class="w-full max-w-5xl mb-6 p-4 sm:p-6 bg-slate-900/80 rounded-xl shadow-xl grid grid-cols-2 md:grid-cols-4 gap-4"
+        >
           <!-- Protocol -->
           <div class="relative max-w-xs mx-auto">
-            <label for="protocol-select" class="block font-medium mb-2 text-gray-300 text-sm text-center">Protocol</label>
-            <select id="protocol-select" class="w-full px-3 py-2 rounded-lg input-dark text-base focus:ring-2">
+            <label
+              for="protocol-select"
+              class="block font-medium mb-2 text-slate-200 text-xs sm:text-sm text-center"
+              >Protocol</label
+            >
+            <select
+              id="protocol-select"
+              class="w-full px-3 py-2 rounded-lg input-dark text-sm focus:ring-2"
+            >
               <option value="all">All Protocols</option>
               <option value="vless">VLESS</option>
               <option value="trojan">TROJAN</option>
@@ -139,24 +202,51 @@
 
           <!-- Country -->
           <div class="relative max-w-xs mx-auto">
-            <label for="country-select" class="block font-medium mb-2 text-gray-300 text-sm text-center">Country</label>
-            <select id="country-select" class="w-full px-3 py-2 rounded-lg input-dark text-base focus:ring-2">
-              <!-- options diisi via JS -->
+            <label
+              for="country-select"
+              class="block font-medium mb-2 text-slate-200 text-xs sm:text-sm text-center"
+              >Country</label
+            >
+            <select
+              id="country-select"
+              class="w-full px-3 py-2 rounded-lg input-dark text-sm focus:ring-2"
+            >
+              <option value="all">All Countries</option>
             </select>
           </div>
 
           <!-- Host -->
           <div class="relative max-w-xs mx-auto">
-            <label for="host-select" class="block font-medium mb-2 text-gray-300 text-sm text-center">Wildcard/Host</label>
-            <select id="host-select" class="w-full px-3 py-2 rounded-lg input-dark text-base focus:ring-2">
-              <!-- options diisi via JS -->
+            <label
+              for="host-select"
+              class="block font-medium mb-2 text-slate-200 text-xs sm:text-sm text-center"
+              >Wildcard / Host</label
+            >
+            <select
+              id="host-select"
+              class="w-full px-3 py-2 rounded-lg input-dark text-sm focus:ring-2"
+            >
+              <option value="default">Default Host</option>
+              <option value="ava.game.naver.com">ava.game.naver.com</option>
+              <option value="support.zoom.us">support.zoom.us</option>
+              <option value="api.midtrans.com">api.midtrans.com</option>
+              <option value="collection.linefriends.com">
+                collection.linefriends.com
+              </option>
             </select>
           </div>
 
           <!-- Port -->
           <div class="relative max-w-xs mx-auto">
-            <label for="port-select" class="block font-medium mb-2 text-gray-300 text-sm text-center">Security/Port</label>
-            <select id="port-select" class="w-full px-3 py-2 rounded-lg input-dark text-base focus:ring-2">
+            <label
+              for="port-select"
+              class="block font-medium mb-2 text-slate-200 text-xs sm:text-sm text-center"
+              >Security / Port</label
+            >
+            <select
+              id="port-select"
+              class="w-full px-3 py-2 rounded-lg input-dark text-sm focus:ring-2"
+            >
               <option value="all">All Ports</option>
               <option value="443">TLS (443)</option>
               <option value="80">NTLS (80)</option>
@@ -164,100 +254,157 @@
           </div>
         </div>
 
-        <!-- Proxy table -->
-        <div class="flex flex-col md:flex-row gap-4 w-full max-w-7xl justify-center">
-          <div class="overflow-x-auto w-full max-w-full" style="max-height: 500px; overflow-y: auto;">
-            <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-base" id="proxy-table">
-              <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+        <!-- Table -->
+        <div class="flex flex-col w-full max-w-7xl justify-center">
+          <div
+            class="overflow-x-auto w-full max-w-full max-h-[500px] overflow-y-auto rounded-xl border border-slate-700/60 bg-slate-900/80"
+          >
+            <table
+              class="min-w-full text-sm text-slate-100 table-dark"
+              id="proxy-table"
+            >
+              <thead
+                class="bg-slate-800 sticky top-0 z-10 text-xs uppercase text-slate-300"
+              >
                 <tr>
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">No.</th>
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">IP</th>
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Country</th>
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">ISP</th>
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Action</th>
+                  <th class="px-3 py-3 text-center">No.</th>
+                  <th class="px-3 py-3 text-center">IP</th>
+                  <th class="px-3 py-3 text-center">Country</th>
+                  <th class="px-3 py-3 text-center">ISP</th>
+                  <th class="px-3 py-3 text-center">Status</th>
+                  <th class="px-3 py-3 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody id="proxy-tbody" class="divide-y divide-gray-200 dark:divide-gray-700">
-                <!-- rows diisi via JS -->
+              <tbody
+                id="proxy-tbody"
+                class="divide-y divide-slate-800 text-sm"
+              >
+                <!-- rows injected by JS -->
               </tbody>
             </table>
           </div>
         </div>
 
         <!-- Pagination -->
-        <nav id="container-pagination" class="w-full max-w-7xl mt-8 sticky bottom-2 z-20 transition-transform -translate-y-6 flex flex-col items-center">
-          <ul class="flex justify-center space-x-2" id="pagination-buttons">
-            <!-- buttons diisi via JS -->
+        <nav
+          id="pagination"
+          class="w-full max-w-7xl mt-6 flex flex-col items-center gap-2"
+        >
+          <ul class="flex justify-center space-x-2 text-sm" id="page-buttons">
+            <!-- page buttons -->
           </ul>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-4" id="pagination-info">
-            Showing 0 to 0 of 0 Proxies
+          <p
+            class="text-xs sm:text-sm text-slate-400 mt-1"
+            id="pagination-info"
+          >
+            Showing 0 to 0 of 0 proxies
           </p>
         </nav>
       </div>
+    </section>
+  </main>
+
+  <!-- Domain / wildcard modal -->
+  <div id="wildcards-overlay" class="hidden fixed inset-0 z-30">
+    <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+    <div
+      class="relative w-[90%] max-w-md mx-auto mt-24 flex flex-col gap-2 p-4 rounded-xl bg-slate-900/95 border border-slate-700 shadow-xl"
+    >
+      <h3 class="text-lg font-semibold text-slate-100 text-center mb-1">
+        Wildcard Domains
+      </h3>
+      <div class="flex w-full gap-2">
+        <input
+          id="new-domain-input"
+          type="text"
+          placeholder="sub.domain"
+          class="w-full px-3 py-2 rounded-md bg-slate-800 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          id="btn-register-domain"
+          class="px-3 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold"
+        >
+          +
+        </button>
+      </div>
+      <div
+        id="container-domains"
+        class="w-full h-32 rounded-md flex flex-col gap-1 overflow-y-auto scrollbar-hide p-2 bg-slate-950/80 text-xs text-slate-200"
+      ></div>
+      <div class="flex w-full gap-2 mt-1">
+        <input
+          id="delete-domain-input"
+          type="number"
+          placeholder="No."
+          class="w-full px-3 py-2 rounded-md bg-slate-800 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
+        <button
+          id="btn-delete-domain"
+          class="px-3 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold"
+        >
+          -
+        </button>
+      </div>
+      <button
+        id="btn-close-wildcards"
+        class="mt-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-medium"
+      >
+        Close
+      </button>
     </div>
   </div>
 
-  <!-- Overlay window (converter + wildcards) -->
-  <div id="container-window" class="hidden">
-    <div class="fixed z-20 top-0 inset-0 w-full h-full bg-gray-900/80 backdrop-blur-sm flex justify-center items-center animate-fade-in">
-      <p id="container-window-info" class="text-center w-full h-full top-1/4 absolute text-white animate-pulse"></p>
-    </div>
-
-    <div id="output-window" class="fixed z-30 inset-0 flex justify-center items-center p-2 hidden">
-      <div class="w-full max-w-xs flex flex-col gap-2 p-4 text-center rounded-xl bg-gray-800 border border-gray-700 shadow-lg animate-zoom-in">
-        <div class="flex flex-col items-center gap-1 mb-1">
-          <h4 class="text-xl font-bold text-white mt-1">Pilih Format</h4>
-        </div>
-        <div class="grid grid-cols-2 gap-1">
-          <button data-target="clash" class="btn-copy-format p-1.5 rounded-md bg-sky-500 hover:bg-sky-600 text-xs font-semibold text-white">Clash</button>
-          <button data-target="sfa" class="btn-copy-format p-1.5 rounded-md bg-sky-500 hover:bg-sky-600 text-xs font-semibold text-white">SFA</button>
-          <button data-target="bfr" class="btn-copy-format p-1.5 rounded-md bg-sky-500 hover:bg-sky-600 text-xs font-semibold text-white">BFR</button>
-          <button id="btn-copy-raw" class="p-1.5 rounded-md bg-gray-400 hover:bg-gray-500 text-xs font-semibold text-white">Raw</button>
-        </div>
-        <div class="flex justify-center">
-          <button id="btn-output-close" class="mt-1 p-3 rounded-lg bg-red-500 hover:bg-red-600 text-xs text-white font-semibold flex items-center justify-center gap-1">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Wildcards window -->
-  <div id="wildcards-window" class="fixed hidden z-30 top-0 right-0 w-full h-full flex justify-center items-center">
-    <div class="w-[75%] max-w-md h-auto flex flex-col gap-2 p-4 rounded-lg bg-white bg-opacity-20 backdrop-blur-sm border border-gray-300">
-      <div class="flex w-full h-full gap-2 justify-between">
-        <input id="new-domain-input" type="text" placeholder="Input wildcard" class="w-full h-full px-4 py-2 rounded-md focus:outline-0 bg-gray-700 text-white"/>
-        <button id="btn-register-domain" class="p-2 rounded-full bg-blue-600 hover:bg-blue-700">+</button>
-      </div>
-      <div id="container-domains" class="w-full h-32 rounded-md flex flex-col gap-1 overflow-y-scroll scrollbar-hide p-2 bg-gray-900"></div>
-      <div class="flex w-full h-full gap-2 justify-between">
-        <input id="delete-domain-input" type="number" placeholder="Input Nomor" class="w-full h-full px-4 py-2 rounded-md focus:outline-0 bg-gray-700 text-white"/>
-        <button id="btn-delete-domain-number" class="p-2 rounded-full bg-red-600 hover:bg-red-700">-</button>
-      </div>
-      <button id="btn-wildcard-close" class="transform-gpu rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium shadow-lg p-2">Close</button>
-    </div>
-  </div>
-
-  <!-- Floating action buttons -->
+  <!-- Floating FAB -->
   <footer>
     <div class="fixed bottom-4 right-4 flex flex-col items-end gap-3 z-50">
-      <button id="btn-main-dropdown" class="transition-colors rounded-full p-2 block text-white shadow-lg transform hover:scale-105 bg-accent-blue hover:bg-opacity-80">+</button>
-      <div id="dropdown-menu" class="hidden flex flex-col gap-3">
-        <a href="https://github.com/oranglemah/khusus/raw/main/qris.jpg" target="_blank">
-          <button class="bg-accent-cyan hover:bg-teal-600 rounded-full border-2 border-gray-900 p-2 block">Rp</button>
-        </a>
-        <a href="https://wa.me/0895325108287" target="_blank">
-          <button class="bg-green-500 hover:bg-green-600 rounded-full border-2 border-gray-900 p-2 block">
-            <img src="https://geoproject.biz.id/circle-flags/whatsapp.png" alt="WhatsApp Icon" class="size-6">
+      <button
+        id="fab-main"
+        class="transition-colors rounded-full p-3 block text-white shadow-lg transform hover:scale-105 bg-accent-blue hover:bg-opacity-80"
+      >
+        +
+      </button>
+      <div id="dropdown-menu" class="hidden flex flex-col gap-3 items-end">
+        <a href="#" target="_blank" id="btn-donate">
+          <button
+            class="bg-accent-cyan hover:bg-teal-600 rounded-full border-2 border-slate-950 p-2 block text-sm font-semibold"
+          >
+            Rp
           </button>
         </a>
-        <a href="https://t.me/Oranglemah97" target="_blank">
-          <button class="bg-blue-500 hover:bg-blue-600 rounded-full border-2 border-gray-900 p-2 block">
-            <img src="https://geoproject.biz.id/circle-flags/telegram.png" alt="Telegram Icon" class="size-6">
+        <a href="#" target="_blank" id="btn-whatsapp">
+          <button
+            class="bg-green-500 hover:bg-green-600 rounded-full border-2 border-slate-950 p-2 block"
+          >
+            <img
+              src="https://geoproject.biz.id/circle-flags/whatsapp.png"
+              alt="WhatsApp Icon"
+              class="size-6"
+            />
           </button>
         </a>
-        <button id="btn-wildcards-toggle" class="bg-indigo-500 hover:bg-indigo-600 rounded-full border-2 border-gray-900 p-2">WC</button>
-        <button id="btn-dark-toggle" class="bg-amber-500 hover:bg-amber-600 rounded-full border-2 border-gray-900 p-2">DM</button>
+        <a href="#" target="_blank" id="btn-telegram">
+          <button
+            class="bg-blue-500 hover:bg-blue-600 rounded-full border-2 border-slate-950 p-2 block"
+          >
+            <img
+              src="https://geoproject.biz.id/circle-flags/telegram.png"
+              alt="Telegram Icon"
+              class="size-6"
+            />
+          </button>
+        </a>
+        <button
+          id="btn-wildcards"
+          class="bg-indigo-500 hover:bg-indigo-600 rounded-full border-2 border-slate-950 p-2 text-xs font-semibold text-white"
+        >
+          WC
+        </button>
+        <button
+          id="btn-darkmode"
+          class="bg-amber-500 hover:bg-amber-600 rounded-full border-2 border-slate-950 p-2 text-xs font-semibold text-white"
+        >
+          DM
+        </button>
       </div>
     </div>
   </footer>
