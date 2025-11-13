@@ -1,5 +1,5 @@
 // ================== KONFIG FRONTEND ==================
-const ROOT_DOMAIN = "sambat.nailamazy.biz.id"; // <- ganti kalau Worker beda
+const ROOT_DOMAIN = "war.oranglemah.web.id"; // <- ganti kalau Worker beda
 const CHECK_PROXY_URL_BASE = `https://${ROOT_DOMAIN}/check?target=`;
 const MYIP_URL = `https://${ROOT_DOMAIN}/api/v1/myip`;
 const DOMAINS_GET_URL = `https://${ROOT_DOMAIN}/api/v1/domains/get`;
