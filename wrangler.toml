@@ -1,0 +1,13 @@
+name = "war"
+main = "worker.js"
+account_id = "7e6b4320b3200424e6b2ae7ba87e8805"
+compatibility_date = "2024-11-13"
+workers_dev = true
+keep_vars = true  # biar VAR/Secrets dari dashboard tidak dihapus
+
+[vars]
+ROOT_DOMAIN = "oranglemah.web.id"
+SERVICE_NAME = "war"
+PRX_BANK_URL = "https://raw.githubusercontent.com/jaka2m/botak/refs/heads/main/cek/proxyList.txt"
+CLOUDFLARE_ZONE_ID = "3de571e998e0b46545df221530b24a1e"
+REVERSE_PRX_TARGET = "example.com"      # ganti kalau mau reverse ke host lain
